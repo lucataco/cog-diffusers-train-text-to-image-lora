@@ -17,10 +17,12 @@ class Predictor(BasePredictor):
         dataloader_num_workers: int = Input(description="Number of workers for dataloader", default=8, ge=1, le=16),
         resolution: int = Input(description="Resolution for training", default=512, ge=128, le=1024),
         train_batch_size: int = Input(description="Batch size for training", default=1, ge=1, le=4),
+        num_train_epochs: int = Input(description="Number of training epochs", default=100, ge=1, le=10000),
         gradient_accumulation_steps: int = Input(description="Gradient accumulation steps", default=4, ge=1, le=8),
-        max_train_steps: int = Input(description="Maximum number of training steps", default=15000),
+        max_train_steps: int = Input(description="Maximum number of training steps", default=1000, ge=1, le=100000),
         learning_rate: float = Input(description="Learning rate for training", default=0.0001, ge=0.0001, le=0.01),
-        max_grad_norm: float = Input(description="Maximum gradient norm", default=1, ge=0.001, le=10),
+        max_grad_norm: float = Input(description="Maximum gradient norm", default=1, ge=0.1, le=10),
+        lr_scheduler: str = Input(description="Learning rate scheduler", default="cosine", choices=["linear", "cosine", "cosine_with_restarts", "polynomial", "constant", "constant_with_warmup"]),
         validation_prompt: str = Input(description="Validation prompt", default="A naruto with blue eyes."),
         seed: int = Input(description="Seed for reproducibility", default=None),
         # Optional inputs:
@@ -42,16 +44,19 @@ class Predictor(BasePredictor):
             "--center_crop",
             "--random_flip",
             "--train_batch_size", str(train_batch_size),
+            "--num_train_epochs", str(num_train_epochs),
             "--gradient_accumulation_steps", str(gradient_accumulation_steps),
             "--max_train_steps", str(max_train_steps),
+            "--checkpointing_steps", str(max_train_steps+1),
             "--learning_rate", str(learning_rate),
             "--max_grad_norm", str(max_grad_norm),
-            "--lr_scheduler", "cosine",
+            "--lr_scheduler", lr_scheduler,
             "--lr_warmup_steps", "0",
             "--output_dir", output_dir,
             "--validation_prompt", validation_prompt,
             "--seed", str(seed),
         ]
+        print(f"Running with params: {run_params}")
         if hf_token is not None:
             run_params.extend(["--push_to_hub"])
             run_params.extend(["--hf_token", hf_token.get_secret_value()])
