@@ -1,0 +1,18 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  gpu: true
+  python_version: "3.10"
+  python_packages:
+    - "torch==2.2"
+    - "torchvision"
+    - "https://github.com/huggingface/diffusers/archive/refs/tags/v0.29.2.tar.gz"
+    - "Pillow"
+    - "accelerate>=0.31.0"
+    - "datasets>=2.19.1"
+    - "hf_transfer"
+    - "peft>=0.7.0"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
